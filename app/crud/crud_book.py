@@ -16,3 +16,12 @@ def delete_book(*, session: Session, serial_number: str) -> None:
         session.delete(db_book)
         session.commit()
     return db_book
+
+def get_book_by_serial_number(*, session: Session, serial_number: str) -> Book:
+    statement = select(Book).where(Book.serial_number == serial_number)
+    db_book = session.exec(statement).first()
+    return db_book
+
+def get_all_books(session: Session) -> list[Book]:
+    statement = select(Book)
+    return session.exec(statement).all()
