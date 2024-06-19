@@ -8,3 +8,11 @@ def create_book(*, session: Session, book_create: BookCreate) -> Book:
     session.commit()
     session.refresh(db_book)
     return db_book
+
+def delete_book(*, session: Session, serial_number: str) -> None:
+    statement = select(Book).where(Book.serial_number == serial_number)
+    db_book = session.exec(statement).first()
+    if db_book:
+        session.delete(db_book)
+        session.commit()
+    return db_book
