@@ -1,7 +1,6 @@
 from sqlmodel import Field, SQLModel
 from typing import Optional
 from datetime import datetime
-from pydantic import constr
 
 class BookBase(SQLModel):
     serial_number: str = Field(unique=True, index=True, schema_extra={'pattern': r'^\d{6}$'})
@@ -13,6 +12,11 @@ class BookBase(SQLModel):
 
 class BookCreate(BookBase):
     pass
+
+class BookBorrowUpdate(SQLModel):
+    is_borrowed: bool
+    borrowed_by: Optional[str] = Field(schema_extra={'pattern': r'^\d{6}$'})
+    borrowed_at: Optional[datetime] = None
 
 class Book(BookBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

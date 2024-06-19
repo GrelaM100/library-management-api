@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from app.models.book import Book, BookCreate
+from app.models.book import Book, BookCreate, BookBorrowUpdate
 
 def create_book(*, session: Session, book_create: BookCreate) -> Book:
     db_book = Book.model_validate(book_create)
@@ -25,3 +25,12 @@ def get_book_by_serial_number(*, session: Session, serial_number: str) -> Book:
 def get_all_books(session: Session) -> list[Book]:
     statement = select(Book)
     return session.exec(statement).all()
+
+def update_book(*, session: Session, db_book: Book, book_update: BookBorrowUpdate) -> Book:
+    book_data = book_update.model_dump(exclude_unset=True)
+    for key, value in book_data.items():
+        setattr(db_book, key, value)
+    
+    session.commit()
+    session.refresh(db_book)
+    return db_book

@@ -1,8 +1,9 @@
 from sqlmodel import Session
-from app.models.book import Book, BookCreate
-from app.crud.crud_book import create_book, delete_book, get_book_by_serial_number, get_all_books
+from app.models.book import Book, BookCreate, BookBorrowUpdate
+from app.crud.crud_book import create_book, delete_book, get_book_by_serial_number, get_all_books, update_book
 from pydantic import ValidationError
 import pytest
+from datetime import datetime
 
 from app.tests.utils import random_six_digit_number
 
@@ -42,7 +43,8 @@ def test_delete_book(db: Session) -> None:
         author="Test Author"
     )
     book = create_book(session=db, book_create=book_create)
-
+def test_borrow_book(db: Session) -> None:
+    
     db_book = db.get(Book, book.id)
     assert db_book is not None
 
@@ -83,3 +85,72 @@ def test_get_all_books(db: Session) -> None:
 
     for book_create in book_creates:
         assert any(book.serial_number == book_create.serial_number for book in all_books)
+
+def test_borrow_book(db: Session) -> None:
+    serial_number = random_six_digit_number()
+    book_create = BookCreate(
+        serial_number=serial_number,
+        title="Test Book",
+        author="Test Author"
+    )
+    book = create_book(session=db, book_create=book_create)
+
+    db_book = db.get(Book, book.id)
+    assert db_book is not None
+    assert db_book.is_borrowed == False
+    assert db_book.borrowed_by == None
+    assert db_book.borrowed_at == None
+
+    borrow_id = random_six_digit_number()
+    book_update = BookBorrowUpdate(
+        is_borrowed=True,
+        borrowed_by=borrow_id,
+        borrowed_at=datetime.now()
+    )
+    updated_book = update_book(session=db, db_book=db_book, book_update=book_update)
+
+    assert updated_book.is_borrowed == True
+    assert updated_book.borrowed_by == borrow_id
+    assert updated_book.borrowed_at is not None
+
+    db_book = db.get(Book, book.id)
+    assert db_book.is_borrowed == True
+    assert db_book.borrowed_by == borrow_id
+    assert db_book.borrowed_at is not None
+
+def test_return_book(db: Session) -> None:
+    serial_number = random_six_digit_number()
+    book_create = BookCreate(
+        serial_number=serial_number,
+        title="Test Book",
+        author="Test Author"
+    )
+    book = create_book(session=db, book_create=book_create)
+
+    borrow_id = random_six_digit_number()
+    book_update = BookBorrowUpdate(
+        is_borrowed=True,
+        borrowed_by=borrow_id,
+        borrowed_at=datetime.utcnow()
+    )
+    updated_book = update_book(session=db, db_book=book, book_update=book_update)
+
+    assert updated_book.is_borrowed == True
+    assert updated_book.borrowed_by == borrow_id
+    assert updated_book.borrowed_at is not None
+
+    book_return_update = BookBorrowUpdate(
+        is_borrowed=False,
+        borrowed_by=None,
+        borrowed_at=None
+    )
+    returned_book = update_book(session=db, db_book=updated_book, book_update=book_return_update)
+
+    assert returned_book.is_borrowed == False
+    assert returned_book.borrowed_by == None
+    assert returned_book.borrowed_at == None
+
+    db_book = db.get(Book, book.id)
+    assert db_book.is_borrowed == False
+    assert db_book.borrowed_by == None
+    assert db_book.borrowed_at == None
