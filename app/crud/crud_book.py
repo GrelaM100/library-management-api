@@ -1,9 +1,14 @@
 from sqlmodel import Session, select
+from datetime import datetime
 
 from app.models.book import Book, BookCreate, BookBorrowUpdate
+from app.exceptions import BookBorrowedError
 
 def create_book(*, session: Session, book_create: BookCreate) -> Book:
     db_book = Book.model_validate(book_create)
+    db_book.is_borrowed = False
+    db_book.borrowed_by = None
+    db_book.borrowed_at = None
     session.add(db_book)
     session.commit()
     session.refresh(db_book)
@@ -12,9 +17,12 @@ def create_book(*, session: Session, book_create: BookCreate) -> Book:
 def delete_book(*, session: Session, serial_number: str) -> None:
     statement = select(Book).where(Book.serial_number == serial_number)
     db_book = session.exec(statement).first()
-    if db_book:
-        session.delete(db_book)
-        session.commit()
+    if not db_book:
+        return None
+    if db_book.is_borrowed:
+        raise BookBorrowedError("Cannot delete a borrowed book")
+    session.delete(db_book)
+    session.commit()
     return db_book
 
 def get_book_by_serial_number(*, session: Session, serial_number: str) -> Book:
@@ -31,6 +39,13 @@ def update_book(*, session: Session, db_book: Book, book_update: BookBorrowUpdat
     for key, value in book_data.items():
         setattr(db_book, key, value)
     
+    if book_update.borrowed_by:
+        db_book.is_borrowed = True
+        db_book.borrowed_at = book_update.borrowed_at or datetime.now()
+    else:
+        db_book.is_borrowed = False
+        db_book.borrowed_at = None
+
     session.commit()
     session.refresh(db_book)
     return db_book
