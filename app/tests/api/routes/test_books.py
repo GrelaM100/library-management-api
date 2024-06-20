@@ -76,3 +76,63 @@ def test_delete_book_borrowed(client: TestClient, db: Session) -> None:
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Cannot delete a borrowed book"
+
+def test_borrow_book(client: TestClient, db: Session) -> None:
+    book = create_random_book(session=db)
+    data = {
+        "borrowed_by": "123456"
+    }
+    response = client.put(f"{settings.api_version_str}/books/borrow/{book.serial_number}", json=data)
+    assert response.status_code == 200
+    content = response.json()
+    assert content["serial_number"] == book.serial_number
+    assert content["is_borrowed"] == True
+    assert content["borrowed_by"] == data["borrowed_by"]
+    assert content["borrowed_at"] is not None
+
+def test_borrow_book_already_borrowed(client: TestClient, db: Session) -> None:
+    book = create_random_book(session=db)
+    book.is_borrowed = True
+    db.commit()
+    data = {
+        "borrowed_by": "123456"
+    }
+    response = client.put(f"{settings.api_version_str}/books/borrow/{book.serial_number}", json=data)
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Book is already borrowed"
+
+def test_borrow_book_not_found(client: TestClient) -> None:
+    data = {
+        "borrowed_by": "123456"
+    }
+    response = client.put(f"{settings.api_version_str}/books/borrow/123456", json=data)
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Book not found"
+
+def test_return_book(client: TestClient, db: Session) -> None:
+    book = create_random_book(session=db)
+    book.is_borrowed = True
+    book.borrowed_by = "123456"
+    db.commit()
+    response = client.put(f"{settings.api_version_str}/books/return/{book.serial_number}")
+    assert response.status_code == 200
+    content = response.json()
+    assert content["serial_number"] == book.serial_number
+    assert content["is_borrowed"] == False
+    assert content["borrowed_by"] == None
+    assert content["borrowed_at"] == None
+
+def test_return_book_not_borrowed(client: TestClient, db: Session) -> None:
+    book = create_random_book(session=db)
+    response = client.put(f"{settings.api_version_str}/books/return/{book.serial_number}")
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Book is not borrowed"
+
+def test_return_book_not_found(client: TestClient) -> None:
+    response = client.put(f"{settings.api_version_str}/books/return/123456")
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Book not found"

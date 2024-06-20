@@ -10,11 +10,12 @@ class BookBase(SQLModel):
     borrowed_by: Optional[str] = Field(default=None, schema_extra={'pattern': r'^\d{6}$'})
     borrowed_at: Optional[datetime] = None
 
-class BookCreate(BookBase):
-    pass
+class BookCreate(SQLModel):
+    serial_number: str = Field(unique=True, index=True, schema_extra={'pattern': r'^\d{6}$'})
+    title: str
+    author: str
 
 class BookBorrowUpdate(SQLModel):
-    is_borrowed: bool
     borrowed_by: Optional[str] = Field(schema_extra={'pattern': r'^\d{6}$'})
     borrowed_at: Optional[datetime] = None
 
