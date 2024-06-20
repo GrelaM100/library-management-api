@@ -19,6 +19,20 @@ def test_create_book(client: TestClient) -> None:
     assert content["borrowed_by"] == None
     assert content["borrowed_at"] == None
 
+def test_create_book_invalid_serial_number(client: TestClient) -> None:
+    data = {"serial_number": "12345", "title": "Test Book", "author": "Test Author"}
+    response = client.post(f"{settings.api_version_str}/books/", json=data)
+    assert response.status_code == 422
+    content = response.json()
+    assert content["detail"][0]["msg"] == "String should match pattern '^\\d{6}$'"
+
+def test_create_book_duplicate_serial_number(client: TestClient, db: Session) -> None:
+    data = {"serial_number": "123456", "title": "Test Book", "author": "Test Author"}
+    client.post(f"{settings.api_version_str}/books/", json=data)
+    response = client.post(f"{settings.api_version_str}/books/", json=data)
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Book with this serial number already exists."
 
 def test_read_all_books(client: TestClient, db: Session) -> None:
     create_random_book(session=db)
