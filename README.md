@@ -37,6 +37,8 @@ This is a simple API for managing a library system. The API allows library staff
     docker-compose up -d
     ```
 
+    Note: If the `INIT_DB` variable is set to `true`, the database will be initialized with 3 example books.
+
 3. The application will be available at `http://localhost:8000`.
 
 4. Auto-generated API documentation is available at:

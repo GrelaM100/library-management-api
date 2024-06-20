@@ -23,7 +23,17 @@ router = APIRouter()
 @router.post("/", response_model=BookPublic)
 def create_book(*, session: SessionDep, book_create: BookCreate) -> Any:
     """
-    Create a new book
+    Create a new book.
+
+    Args:
+        session (SessionDep): The database session.
+        book_create (BookCreate): The book data to create.
+
+    Returns:
+        BookPublic: The created book.
+
+    Raises:
+        HTTPException: If a book with the same serial number already exists.
     """
     try:
         book = crud_book.create_book(session=session, book_create=book_create)
@@ -38,7 +48,15 @@ def create_book(*, session: SessionDep, book_create: BookCreate) -> Any:
 @router.get("/", response_model=BooksPublic)
 def read_all_books(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
-    Get all books
+    Retrieve a list of all books.
+
+    Args:
+        session (SessionDep): The database session.
+        skip (int, optional): Number of books to skip. Defaults to 0.
+        limit (int, optional): Maximum number of books to retrieve. Defaults to 100.
+
+    Returns:
+        BooksPublic: The list of books and the total count.
     """
     books = crud_book.get_all_books(session=session)[skip : skip + limit]
     count_statement = select(func.count()).select_from(Book)
@@ -49,7 +67,17 @@ def read_all_books(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
 @router.get("/{serial_number}", response_model=BookPublic)
 def read_book(session: SessionDep, serial_number: str) -> Any:
     """
-    Get a specific book
+    Retrieve the details of a specific book by its serial number.
+
+    Args:
+        session (SessionDep): The database session.
+        serial_number (str): The serial number of the book to retrieve.
+
+    Returns:
+        BookPublic: The retrieved book.
+
+    Raises:
+        HTTPException: If the book is not found.
     """
     validate_serial_number(serial_number)
     book = crud_book.get_book_by_serial_number(
@@ -65,7 +93,18 @@ def borrow_book(
     *, session: SessionDep, serial_number: str, book_update: BookBorrowUpdate
 ) -> Any:
     """
-    Borrow a book
+    Borrow a book.
+
+    Args:
+        session (SessionDep): The database session.
+        serial_number (str): The serial number of the book to borrow.
+        book_update (BookBorrowUpdate): The update data for the book.
+
+    Returns:
+        BookPublic: The updated book.
+
+    Raises:
+        HTTPException: If the book is not found or is already borrowed.
     """
     validate_serial_number(serial_number)
     book = crud_book.get_book_by_serial_number(
@@ -83,7 +122,17 @@ def borrow_book(
 @router.put("/return/{serial_number}", response_model=BookPublic)
 def return_book(*, session: SessionDep, serial_number: str) -> Any:
     """
-    Return a borrowed book
+    Return a borrowed book.
+
+    Args:
+        session (SessionDep): The database session.
+        serial_number (str): The serial number of the book to return.
+
+    Returns:
+        BookPublic: The updated book.
+
+    Raises:
+        HTTPException: If the book is not found or is not borrowed.
     """
     validate_serial_number(serial_number)
     book = crud_book.get_book_by_serial_number(
@@ -101,7 +150,17 @@ def return_book(*, session: SessionDep, serial_number: str) -> Any:
 @router.delete("/{serial_number}")
 def delete_book(session: SessionDep, serial_number: str) -> Message:
     """
-    Delete a book
+    Delete a book.
+
+    Args:
+        session (SessionDep): The database session.
+        serial_number (str): The serial number of the book to delete.
+
+    Returns:
+        Message: A message indicating the deletion status.
+
+    Raises:
+        HTTPException: If the book is not found or if the book is borrowed.
     """
     validate_serial_number(serial_number)
     try:
