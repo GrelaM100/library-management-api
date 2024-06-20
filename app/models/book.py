@@ -32,3 +32,6 @@ class BookPublic(SQLModel):
 class BooksPublic(SQLModel):
     data: list[BookPublic]
     count: int
+
+class Message(SQLModel):
+    message: str

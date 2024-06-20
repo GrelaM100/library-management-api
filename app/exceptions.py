@@ -1,0 +1,2 @@
+class BookBorrowedError(Exception):
+    pass

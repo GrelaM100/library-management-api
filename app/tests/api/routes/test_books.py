@@ -54,3 +54,25 @@ def test_read_book_invalid_number(client: TestClient) -> None:
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Serial number must be a six-digit number"
+
+def test_delete_book(client: TestClient, db: Session) -> None:
+    book = create_random_book(session=db)
+    response = client.delete(f"{settings.api_version_str}/books/{book.serial_number}")
+    assert response.status_code == 200
+    content = response.json()
+    assert content["message"] == "Book deleted successfully"
+
+def test_delete_book_not_found(client: TestClient) -> None:
+    response = client.delete(f"{settings.api_version_str}/books/123456")
+    assert response.status_code == 404
+    content = response.json()
+    assert content["detail"] == "Book not found"
+
+def test_delete_book_borrowed(client: TestClient, db: Session) -> None:
+    book = create_random_book(session=db)
+    book.is_borrowed = True
+    db.commit()
+    response = client.delete(f"{settings.api_version_str}/books/{book.serial_number}")
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Cannot delete a borrowed book"
