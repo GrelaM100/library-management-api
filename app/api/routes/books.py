@@ -46,21 +46,6 @@ def read_book(session: SessionDep, serial_number: str) -> Any:
         raise HTTPException(status_code=404, detail="Book not found")
     return book
 
-@router.delete("/{serial_number}")
-def delete_book(session: SessionDep, serial_number: str) -> Message:
-    """
-    Delete a book
-    """
-    validate_serial_number(serial_number)
-    try:
-        book = crud_book.delete_book(session=session, serial_number=serial_number)
-        if not book:
-            raise HTTPException(status_code=404, detail="Book not found")
-    except BookBorrowedError:
-        raise HTTPException(status_code=400, detail="Cannot delete a borrowed book")
-    
-    return Message(message="Book deleted successfully")
-
 @router.put("/borrow/{serial_number}", response_model=BookPublic)
 def borrow_book(*, session: SessionDep, serial_number: str, book_update: BookBorrowUpdate) -> Any:
     """
@@ -90,3 +75,18 @@ def return_book(*, session: SessionDep, serial_number: str) -> Any:
     book_update = BookBorrowUpdate(borrowed_by=None, borrowed_at=None)
     book = crud_book.update_book(session=session, db_book=book, book_update=book_update)
     return book
+
+@router.delete("/{serial_number}")
+def delete_book(session: SessionDep, serial_number: str) -> Message:
+    """
+    Delete a book
+    """
+    validate_serial_number(serial_number)
+    try:
+        book = crud_book.delete_book(session=session, serial_number=serial_number)
+        if not book:
+            raise HTTPException(status_code=404, detail="Book not found")
+    except BookBorrowedError:
+        raise HTTPException(status_code=400, detail="Cannot delete a borrowed book")
+    
+    return Message(message="Book deleted successfully")
