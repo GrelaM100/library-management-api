@@ -28,3 +28,7 @@ class BookPublic(SQLModel):
     is_borrowed: bool
     borrowed_by: Optional[str] = None
     borrowed_at: Optional[datetime] = None
+
+class BooksPublic(SQLModel):
+    data: list[BookPublic]
+    count: int
