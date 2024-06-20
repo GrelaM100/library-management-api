@@ -11,6 +11,7 @@ def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
     create_initial_books(session)
 
+
 def create_initial_books(session: Session) -> None:
     books = [
         Book(serial_number="000001", title="Book One", author="Author One"),

@@ -16,6 +16,7 @@ class BookBase(SQLModel):
         borrowed_by (Optional[str]): Library card number of the borrower. Must be a 6-digit string.
         borrowed_at (Optional[datetime]): Date and time when the book was borrowed.
     """
+
     serial_number: str = Field(
         unique=True, index=True, schema_extra={"pattern": r"^\d{6}$"}
     )
@@ -37,6 +38,7 @@ class BookCreate(SQLModel):
         title (str): Title of the book.
         author (str): Author of the book.
     """
+
     serial_number: str = Field(
         unique=True, index=True, schema_extra={"pattern": r"^\d{6}$"}
     )
@@ -52,6 +54,7 @@ class BookBorrowUpdate(SQLModel):
         borrowed_by (Optional[str]): Library card number of the borrower. Must be a 6-digit string.
         borrowed_at (Optional[datetime]): Date and time when the book was borrowed.
     """
+
     borrowed_by: Optional[str] = Field(schema_extra={"pattern": r"^\d{6}$"})
     borrowed_at: Optional[datetime] = None
 
@@ -63,6 +66,7 @@ class Book(BookBase, table=True):
     Attributes:
         id (Optional[int]): Primary key of the book.
     """
+
     id: Optional[int] = Field(default=None, primary_key=True)
 
 
@@ -78,6 +82,7 @@ class BookPublic(SQLModel):
         borrowed_by (Optional[str]): Library card number of the borrower.
         borrowed_at (Optional[datetime]): Date and time when the book was borrowed.
     """
+
     serial_number: str
     title: str
     author: str
@@ -94,6 +99,7 @@ class BooksPublic(SQLModel):
         data (list[BookPublic]): List of public-facing book models.
         count (int): Total count of books.
     """
+
     data: list[BookPublic]
     count: int
 
@@ -105,4 +111,5 @@ class Message(SQLModel):
     Attributes:
         message (str): The message content.
     """
+
     message: str
