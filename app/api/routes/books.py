@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.api.deps import SessionDep
 from app.models.book import BookCreate, BookPublic, BooksPublic, BookBorrowUpdate, Book
+from app.utils import validate_serial_number
 
 router = APIRouter()
 
@@ -25,7 +26,7 @@ def create_book(*, session: SessionDep, book_create: BookCreate) -> Any:
     return book
 
 @router.get("/", response_model=BooksPublic)
-def get_all_books(*, session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+def read_all_books(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
     Get all books
     """
@@ -35,3 +36,15 @@ def get_all_books(*, session: SessionDep, skip: int = 0, limit: int = 100) -> An
     books = session.exec(statement).all()
 
     return BooksPublic(data=books, count=count)
+
+@router.get("/{serial_number}", response_model=BookPublic)
+def read_book(session: SessionDep, serial_number: str) -> Any:
+    """
+    Get a specific book
+    """
+    validate_serial_number(serial_number)
+    statement = select(Book).where(Book.serial_number == serial_number)
+    book = session.exec(statement).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
