@@ -17,9 +17,7 @@ class Settings(BaseSettings):
     host: str = "localhost"
     environment: str = "development"
 
-    cors_origins: Annotated[
-        list[AnyUrl] | str, BeforeValidator(parse_cors)
-    ] = []
+    cors_origins: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
 
     app_name: str = "Library Management API"
     app_run_name: str = "main:app"
@@ -47,7 +45,7 @@ class Settings(BaseSettings):
             port=self.postgres_port,
             path=self.postgres_db,
         )
-    
+
     init_db: bool
 
 
