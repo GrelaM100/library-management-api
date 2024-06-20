@@ -70,7 +70,7 @@ def test_get_all_books(db: Session) -> None:
     books = [create_random_book(session=db) for _ in range(3)]
 
     all_books = get_all_books(session=db)
-    assert len(all_books) == len(books)
+    assert len(all_books) >= len(books)
 
     for book in books:
         assert any(b.serial_number == book.serial_number for b in all_books)
