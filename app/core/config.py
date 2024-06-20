@@ -10,7 +10,11 @@ class Settings(BaseSettings):
     app_version: str = "v1"
     api_port: int = 8000
 
-    SQLALCHEMY_DATABASE_URI: str = "sqlite:///./test.db"
+    @property
+    def api_version_str(self) -> str:
+        return f"/api/{self.app_version}"
+
+    sqlalchemy_database_uri: str = "sqlite:///./test.db"
 
 
 settings = Settings()

@@ -20,3 +20,11 @@ class BookBorrowUpdate(SQLModel):
 
 class Book(BookBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+
+class BookPublic(SQLModel):
+    serial_number: str
+    title: str
+    author: str
+    is_borrowed: bool
+    borrowed_by: Optional[str] = None
+    borrowed_at: Optional[datetime] = None
