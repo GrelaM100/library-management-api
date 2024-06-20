@@ -1,8 +1,10 @@
-from sqlmodel import Session, select
 from datetime import datetime
 
-from app.models.book import Book, BookCreate, BookBorrowUpdate
+from sqlmodel import Session, select
+
 from app.exceptions import BookBorrowedError
+from app.models.book import Book, BookBorrowUpdate, BookCreate
+
 
 def create_book(*, session: Session, book_create: BookCreate) -> Book:
     db_book = Book.model_validate(book_create)
@@ -13,6 +15,7 @@ def create_book(*, session: Session, book_create: BookCreate) -> Book:
     session.commit()
     session.refresh(db_book)
     return db_book
+
 
 def delete_book(*, session: Session, serial_number: str) -> None:
     statement = select(Book).where(Book.serial_number == serial_number)
@@ -25,20 +28,25 @@ def delete_book(*, session: Session, serial_number: str) -> None:
     session.commit()
     return db_book
 
+
 def get_book_by_serial_number(*, session: Session, serial_number: str) -> Book:
     statement = select(Book).where(Book.serial_number == serial_number)
     db_book = session.exec(statement).first()
     return db_book
 
+
 def get_all_books(session: Session) -> list[Book]:
     statement = select(Book)
     return session.exec(statement).all()
 
-def update_book(*, session: Session, db_book: Book, book_update: BookBorrowUpdate) -> Book:
+
+def update_book(
+    *, session: Session, db_book: Book, book_update: BookBorrowUpdate
+) -> Book:
     book_data = book_update.model_dump(exclude_unset=True)
     for key, value in book_data.items():
         setattr(db_book, key, value)
-    
+
     if book_update.borrowed_by:
         db_book.is_borrowed = True
         db_book.borrowed_at = book_update.borrowed_at or datetime.now()
