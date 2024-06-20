@@ -28,13 +28,13 @@ This is a simple API for managing a library system. The API allows library staff
 2. Build and run the application using Docker Compose:
 
     ```sh
-    docker-compose up
+    docker compose up
     ```
 
     To run the application in detached mode, use:
 
     ```sh
-    docker-compose up -d
+    docker compose up -d
     ```
 
     Note: If the `INIT_DB` variable is set to `true`, the database will be initialized with 3 example books.
@@ -51,4 +51,4 @@ This is a simple API for managing a library system. The API allows library staff
 To run the tests, use the following command:
 
 ```sh
-docker-compose exec api bash /app/tests-start.sh
+docker compose exec api bash /app/tests-start.sh
